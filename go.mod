@@ -6,7 +6,7 @@ replace k8s.io/client-go => k8s.io/client-go v0.20.1
 
 require (
 	github.com/c-bata/go-prompt v0.2.6
-	github.com/docker/docker v1.6.1
+	github.com/docker/docker v24.0.7+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/grantae/certinfo v0.0.0-20170412194111-59d56a35515b
