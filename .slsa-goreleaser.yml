@@ -1,0 +1,55 @@
+version: 1
+
+# (Optional) List of env variables used during compilation.
+env:
+  - CGO_ENABLED=0
+
+# (Optional) Flags for the compiler.
+flags:
+  - -trimpath
+  - -tags=netgo
+
+# The OS to compile for. `GOOS` env variable will be set to this value.
+goos:
+  - darwin
+  - windows
+  - linux
+
+# The architecture to compile for. `GOARCH` env variable will be set to this value.
+goarch:
+  - amd64
+  - arm64
+  - arm
+  - "386"
+  - s390x
+
+ignore:
+  - goos: linux
+    goarch: "386"
+  - goos: darwin
+    goarch: "386"
+  - goos: darwin
+    goarch: arm
+  - goos: darwin
+    goarch: s390x
+  - goos: windows
+    goarch: arm
+  - goos: windows
+    goarch: s390x
+
+main: main.go
+
+binary: "rancher-{{ .Os }}-{{ .Arch }}-{{ .Version }}"
+
+# (Optional) ldflags generated dynamically in the workflow, and set as the `evaluated-envs` input variables in the workflow.
+ldflags:
+  - -w
+  - -s
+  - -X main.VERSION={{ .Env.VERSION }}
+  - -extldflags -static
+
+sboms:
+  - id: source
+    artifacts: source
+    documents:
+      - '{{ .ProjectName }}_{{ .Version }}_sbom.spdx.json'
