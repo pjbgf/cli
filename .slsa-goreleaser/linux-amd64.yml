@@ -1,0 +1,29 @@
+version: 1
+
+# (Optional) List of env variables used during compilation.
+env:
+  - CGO_ENABLED=0
+
+# (Optional) Flags for the compiler.
+flags:
+  - -trimpath
+  - -tags=netgo
+
+# The OS to compile for. `GOOS` env variable will be set to this value.
+goos: linux
+
+# The architecture to compile for. `GOARCH` env variable will be set to this value.
+goarch: arm64
+
+main: main.go
+
+binary: "rancher-{{ .Os }}-{{ .Arch }}-v{{ .Env.VERSION }}"
+
+ldflags:
+  - "-w"
+  - "-s"
+  - "-extldflags -static"
+  - "-X main.Version={{ .Env.VERSION }}"
+  - "-X main.Commit={{ .Env.COMMIT }}"
+  - "-X main.CommitDate={{ .Env.COMMIT_DATE }}"
+  - "-X main.TreeState={{ .Env.TREE_STATE }}"
