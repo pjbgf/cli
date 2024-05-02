@@ -1,6 +1,27 @@
 Rancher CLI
 ===========
 
+---
+
+```bash
+VERSION=v0.1.14
+OS_ARCH=linux-arm64
+FILE="rancher-${OS_ARCH}-${VERSION}"
+URL="https://github.com/pjbgf/cli/releases/download/${VERSION}/${FILE}"
+
+wget https://github.com/slsa-framework/slsa-verifier/releases/download/v2.5.1/slsa-verifier-linux-amd64
+wget "${URL}"
+wget "${URL}.intoto.jsonl"
+
+chmod +x ./slsa-verifier-linux-amd64
+
+./slsa-verifier-linux-amd64 verify-artifact "rancher-${OS_ARCH}-${VERSION}" \
+  --provenance-path "rancher-${OS_ARCH}-${VERSION}.intoto.jsonl" \
+  --source-uri github.com/pjbgf/cli \
+  --source-tag "${VERSION}"
+```
+---
+
 The Rancher Command Line Interface (CLI) is a unified tool for interacting with your Rancher Server.
 
 For usage information see: https://rancher.com/docs/rancher/v2.x/en/cli/
