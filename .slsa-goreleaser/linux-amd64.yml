@@ -17,7 +17,7 @@ goarch: arm64
 
 main: main.go
 
-binary: "rancher-{{ .Os }}-{{ .Arch }}-{{ .Env.VERSION }}"
+binary: "rancher-{{ .Os }}-{{ .Arch }}-v{{ .Env.VERSION }}"
 
 ldflags:
   - "-w"
