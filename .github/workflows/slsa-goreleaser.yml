@@ -1,0 +1,71 @@
+name: Release with SLSA Artifacts
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*"
+
+permissions: {}
+
+jobs:
+    
+  # Generate ldflags dynamically.
+  args:
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+    outputs:
+      commit-date: ${{ steps.ldflags.outputs.commit-date }}
+      commit: ${{ steps.ldflags.outputs.commit }}
+      version: ${{ steps.ldflags.outputs.version }}
+      tree-state: ${{ steps.ldflags.outputs.tree-state }}
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - id: ldflags
+        run: |
+          echo "commit-date=$(git log --date=iso8601-strict -1 --pretty=%ct)" >> "$GITHUB_OUTPUT"
+          echo "commit=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          echo "version=$(git describe --tags --always --dirty | cut -c2-)" >> "$GITHUB_OUTPUT"
+          echo "tree-state=$(if git diff --quiet; then echo "clean"; else echo "dirty"; fi)" >> "$GITHUB_OUTPUT"
+      - name: SBOM
+        uses: anchore/sbom-action@7ccf588e3cf3cc2611714c2eeae48550fbc17552
+        with:
+          output-file: rancher-${{github.ref_name}}-spdx.json
+          upload-release-assets: false
+          upload-artifact: false
+      - name: Upload SBOM
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{github.ref_name}} rancher-${{github.ref_name}}-spdx.json
+
+
+  # Trusted builder.
+  build:
+    permissions:
+      id-token: write
+      contents: write # To upload assets to release.
+      actions: read # To read the workflow path.
+
+    strategy:
+      matrix:
+        os-arch:
+          - linux-amd64
+          - linux-arm
+          - linux-s390x
+          - windows-amd64
+          - windows-386
+          - darwin-amd64
+          - darwin-arm64
+
+    needs: args
+    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v2.0.0
+    with:
+      go-version: 1.22
+      config-file: .slsa-goreleaser/${{matrix.os-arch}}.yml
+      # Optional: only needed if using ldflags.
+      evaluated-envs: "COMMIT_DATE:${{needs.args.outputs.commit-date}}, COMMIT:${{needs.args.outputs.commit}}, VERSION:${{needs.args.outputs.version}}, TREE_STATE:${{needs.args.outputs.tree-state}}"
