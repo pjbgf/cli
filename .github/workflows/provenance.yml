@@ -40,7 +40,10 @@ jobs:
         uses: github-early-access/generate-build-provenance@main
         with:
           subject-path: 'dist/artifacts/latest/rancher*'
-
+      - uses: actions/attest-sbom@v1
+        with:
+          subject-path: 'dist/artifacts/latest/rancher*'
+          sbom-path: 'dist/artifacts/latest/rancher-${{github.ref_name}}.spdx.json'
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
