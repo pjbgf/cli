@@ -36,11 +36,11 @@ jobs:
           output-file: 'dist/artifacts/latest/rancher-${{github.ref_name}}.spdx.json'
           upload-release-assets: false
           upload-artifact: false
-      - name: Attest artifact
-        uses: github-early-access/generate-build-provenance@main
+      - name: Attest artifacts
+        uses: actions/attest-sbom@v1
         with:
           subject-path: 'dist/artifacts/latest/rancher*'
-
+          sbom-path: 'dist/artifacts/latest/rancher-${{github.ref_name}}.spdx.json'
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
